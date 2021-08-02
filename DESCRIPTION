@@ -1,0 +1,37 @@
+Package: BCCSclassifier
+Type: Package
+Title: Breast Cancer Consensus Subtype Classifier
+Version: 0.0.0.9000
+Authors@R: 
+    c(person(given = "Steven",
+           family = "Buechler",
+           role = c("aut", "cre"),
+           email = "steve@nd.edu",
+           comment = c(ORCID = "0000-0003-3018-9206")),
+    person(given = "Christina",
+           family = "Horr",
+           role = c("aut"),
+           email = "chorr@alumni.nd.edu",
+           comment = c(ORCID = "0000-0001-9684-2840"))
+           )
+Maintainer: Steven Buechler <steve@nd.edu>
+Description: Classification of whole-transcriptome assays of breast cancer samples 
+  using the Breast Cancer Consensus Subtype multi-kTSP classifier.
+Depends: 
+  R (>= 3.5.0)
+License: CC-NC-SA + file LICENSE
+BugReports: https://github.com/sbuechler/BCCSclassifier/issues
+Encoding: UTF-8
+LazyData: true
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.1.1
+Imports:
+    purrr,
+    dplyr,
+    tibble,
+    tidyr,
+    magrittr
+Suggests: 
+    rmarkdown,
+    knitr
+VignetteBuilder: knitr
