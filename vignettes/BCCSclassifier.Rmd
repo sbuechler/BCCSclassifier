@@ -1,0 +1,108 @@
+---
+title: "BCCSclassifier for subtyping breast cancer"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{BCCSclassifier for subtyping breast cancer}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup}
+library(BCCSclassifier)
+```
+
+# Overview
+
+BCCSclassifier identifies subtypes of breast cancer samples based on the expression values of genes as published in Horr, C., Buechler, S. Breast Cancer Consensus Subtypes: A system for subtyping breast cancer tumors based on gene expression. *npj Breast Cancer*. (2021). The package is for research use only, and expects that expression values were obtained from fresh-frozen primary tumor samples.
+
+# Installation
+
+After installing the devtools package, BCCSclassifier can be installed by
+
+```{r, eval=FALSE}
+devtools::install_github("sbuechler/BCCSclassifier", build_vignettes = TRUE)
+```
+
+
+# Basic usage
+
+BCCSclassifier is applied to a matrix of gene expression values from a breast cancer sample, formatted as follows.
+
+## Format of the expression dataset
+
+The functions for BCCS classification requires an **R** object of class "matrix", called, e.g., `exp_dat`, containing expression values for a set of genes (rows) in breast cancer samples (columns). The source of `exp_dat` would likely be a whole-transcriptome dataset obtained by microarrays (e.g., Affymetrix or Illumina beadarrays) or RNA-seq. Each row of `exp_dat` should be the expression values for some assay feature that was selected to represent the gene. The row names of `exp_dat` must be gene symbols. The included data.frame `bccs_classifier_genes` contains recommended probes for Affymetrix and Illumina datasets for all genes (n = 430) used in BCCSclassifier. Of note, if `exp_dat` is missing some gene used, then any kTSP model in the family that uses that gene will be eliminated, and analysis will proceed with the remaining kTSP models in the family.  The ENTREZIDs in `bccs_classifier_genes` are provided as an extra aid to locating the gene symbols used in our models. 
+
+It is important that expression values are *not* median-centered or otherwise scaled. For Affymetrix arrays we recommend using frozen-RMA for normalization. For RNA-seq data, standard measures, such as `log2`  of FPKM + 1, or TPM + 1, can be used. We do not recommend using data obtained with Agilent two-color arrays. 
+
+## Tissue sample requirements
+
+BCCSclassifier was developed with expression data from fresh-frozen primary tumor samples. Classifications using mRNA from formalin-fixed paraffin-embedded tissue may be unreliable. Also, we have no results that compare subtypes for primary tumors and matching metastases.
+
+## Application of BCCSclassifier
+
+Classification can be performed with the function `predict_bccs`, which requires two arguments, `dat` and `model`. The matrix of expression values for the samples to be classified, as described above, should be assigned to `dat`.  The `model` argument should be assigned one of the values "erposneg", "erpos", or "erneg", depending on the subtyping model with which the sample should be analyzed.  
+
+To illustrate usage of the package, a matrix of expression values, `exp_data_sample`, for 200 breast cancer samples is included in the package. These samples can be subtyped with the ER+/- model of BCCSclassifier as follows.
+
+```{r}
+exp_dat <- exp_data_sample
+example_bccs_subtypes <- predict_bccs(
+  dat = exp_dat,
+  model = "erposneg"
+)
+```
+
+```{r}
+dplyr::glimpse(example_bccs_subtypes)
+```
+
+Each observation in the output contains the sample's subtype prediction and the fraction (frequency) of kTSP models that predicted the sample had this subtype. 
+
+When the frequency of prediction of some sample's subtype assignment is unusually low, it is natural to ask if the frequency of prediction of another subtype is nearly as high. To answer this question, we provide the `predict_bccs_frequency` function that takes the same arguments as `predict_bccs`.
+
+```{r}
+example_bccs_subtype_frequencies <- predict_bccs_frequency(
+  dat = exp_dat,
+  model = "erposneg"
+)
+```
+
+```{r}
+dplyr::glimpse(example_bccs_subtype_frequencies)
+```
+
+This dataset includes an observation for each sample and each possible subtype, and the frequency with which the sample is predicted to be in this subtype. 
+
+# Dependence on the ktspair package
+
+In the derivation of the BCCS classifer, the R package ktspair was used. Our model objects, e.g., MPred_erpos, contain nested objects of class "ktsp". Using these models to classify breast cancer samples requires a `predict` method for such objects. Because the ktspair package is not available in CRAN for R versions ≥ 4.1, we reproduced the prediction method in our code, unedited. For this reason, BCCSclassifier does not directly depend on the ktspair package.
+
+## References for ktspair
+
+J. Damond, supervised by S. Morgenthaler and S. Hosseinian, "Presentation and study of robustness for several methods to classify individuals based on their gene expressions", Master thesis, Swiss Federal Institute of Technology Lausanne (Switzerland), 2011.
+
+Damond, J.  "ktspair: k-Top Scoring Pairs for Microarray Classification." R package version 1.0, CRAN, 2011.
+
+
+
+
+# Step by step evaluation
+
+Users who wish a more granular view can use the following step by step subtyping process. Notice that each function returns a tibble (data.frame), that is the input to the next function in the process. The code is not evaluated in this vignette.
+
+```{r, eval=FALSE}
+PPI <- make_pairwise_predictions(dat = exp_dat, model = "erposneg")
+SPI <- make_subtype_predictions(PPI)
+SPF <- fequency_of_subtype(SPI)
+final_bccs_prediction <- select_final_prediction(SPF)
+```
+
+The documentation for these component functions explains how they work and the results they produce.
+
