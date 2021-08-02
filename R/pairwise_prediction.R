@@ -335,7 +335,7 @@ predict_ktsp <- function(object, dat = NULL, select = NULL, display = TRUE,...){
       k <- k2
     }
     ktspnames <- rownames(ktspobj$ktspdat)
-    if(class(dat) == "matrix"){
+    if("matrix" %in% class(dat)){
       if(is.null(rownames(dat))){
         if(display==TRUE){
           cat("No rownames found, using indices \n")
