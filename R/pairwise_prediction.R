@@ -271,7 +271,7 @@ predict_ktsp <- function(object, dat = NULL, select = NULL, display = TRUE,...){
       }
       return(predict)
     }
-    if(class(dat) == "ExpressionSet"){
+    if("ExpressionSet" %in% class(dat)){
       if(is.null(featureNames(dat))){
         if(display==TRUE){
           cat("No featureNames info found, using indices \n")
@@ -414,7 +414,7 @@ predict_ktsp <- function(object, dat = NULL, select = NULL, display = TRUE,...){
       return(predict)
     }
 
-    if(class(dat) == "ExpressionSet"){
+    if("ExpressionSet" %in% class(dat)){
       if(is.null(featureNames(dat))){
         if(display==TRUE){
           cat("No featureNames info found, using indices \n")}
